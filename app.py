@@ -114,7 +114,7 @@ class Player2(Player):
     def init_stockfish(self):
         self.__is_engine = True
         try:
-            self.__engine = chess.engine.SimpleEngine.popen_uci("/usr/bin/stockfish")
+            self.__engine = chess.engine.SimpleEngine.popen_uci("C:\\Users\\baran\\Downloads\\stockfish_12_win_x64_bmi2\\stockfish_20090216_x64_bmi2.exe")
             return True
         except Exception:
             return False
@@ -205,9 +205,12 @@ def run_game():
                     if Human.is_turn():
                         board = Human.make_move(str(move_san))
                         undo_moves_stack = [] #make undo moves stack empty if any move is done.
+                        print("board state:")
+                        print(board)
                         if engine.is_turn():
                             board = engine.engine_move()
-                    print(board)
+                            print("board state:")
+                            print(board)
                 except Exception:
                     traceback.print_exc()
                 game_moves_san = [move_uci.san() for move_uci in board_to_game(board).mainline()]
@@ -260,7 +263,7 @@ def run_game():
         try:
             undo_moves_stack.append(board.pop())
         except IndexError:
-            print("fuck")
+            print("oops")
 
         resp = {'fen': board.board_fen(), 'pgn': str(board_to_game(board).mainline_moves())}
         response = app.response_class(
@@ -291,7 +294,7 @@ def run_game():
         return response
 
 
-    http_server = WSGIServer(('0.0.0.0', 1337), app)
+    http_server = WSGIServer(('0.0.0.0', 80), app)
     http_server.serve_forever()
 
     #app.run(host='127.0.0.1', debug=True)
