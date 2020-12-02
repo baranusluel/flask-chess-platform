@@ -187,7 +187,7 @@ def run_game():
     
     ser = serial.Serial("/dev/ttyACM0", 9600)
     ser.flushInput()
-    ser.write("new\n");
+    ser.write(b'new\n');
 
     app = Flask(__name__, static_url_path='')
     @app.route('/', methods=['GET'])
@@ -212,13 +212,13 @@ def run_game():
                         board = Human.make_move(str(move_san))
                         undo_moves_stack = [] #make undo moves stack empty if any move is done.
                         print(board)
-                        ser.write("board\n")
-                        ser.write(board)
+                        ser.write(b'board\n')
+                        ser.write(str(board).encode('ascii'))
                         if engine.is_turn():
                             board = engine.engine_move()
                             print(board)
-                            ser.write("board\n")
-                            ser.write(board)
+                            ser.write(b'board\n')
+                            ser.write(str(board).encode('ascii'))
                 except Exception:
                     traceback.print_exc()
                 game_moves_san = [move_uci.san() for move_uci in board_to_game(board).mainline()]
@@ -304,7 +304,7 @@ def run_game():
         return response
 
 
-    http_server = WSGIServer(('0.0.0.0', 80), app)
+    http_server = WSGIServer(('0.0.0.0', 3000), app)
     http_server.serve_forever()
 
     #app.run(host='127.0.0.1', debug=True)
