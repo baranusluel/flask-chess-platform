@@ -12,6 +12,8 @@ import collections
 import json
 from gevent.pywsgi import WSGIServer
 
+import serial
+
 
 class Player(object):
     def __init__(self, board, game_time=300):
@@ -114,7 +116,7 @@ class Player2(Player):
     def init_stockfish(self):
         self.__is_engine = True
         try:
-            self.__engine = chess.engine.SimpleEngine.popen_uci("C:\\Users\\baran\\Downloads\\stockfish_12_win_x64_bmi2\\stockfish_20090216_x64_bmi2.exe")
+            self.__engine = chess.engine.SimpleEngine.popen_uci("/usr/bin/stockfish")
             return True
         except Exception:
             return False
@@ -182,6 +184,10 @@ def run_game():
     Human  = Player1(board)
     engine = Player2(board)
     engine.init_stockfish()
+    
+    ser = serial.Serial("/dev/ttyACM0", 9600)
+    ser.flushInput()
+    ser.write("new\n");
 
     app = Flask(__name__, static_url_path='')
     @app.route('/', methods=['GET'])
@@ -205,12 +211,14 @@ def run_game():
                     if Human.is_turn():
                         board = Human.make_move(str(move_san))
                         undo_moves_stack = [] #make undo moves stack empty if any move is done.
-                        print("board state:")
                         print(board)
+                        ser.write("board\n")
+                        ser.write(board)
                         if engine.is_turn():
                             board = engine.engine_move()
-                            print("board state:")
                             print(board)
+                            ser.write("board\n")
+                            ser.write(board)
                 except Exception:
                     traceback.print_exc()
                 game_moves_san = [move_uci.san() for move_uci in board_to_game(board).mainline()]
@@ -245,6 +253,8 @@ def run_game():
         board = chess.Board()
         Human.set_board(board)
         engine.set_board(board)
+        
+        ser.write("new\n")
 
         resp = {"fen": board.board_fen(), 'pgn': str(board_to_game(board).mainline_moves())}
         response = app.response_class(
