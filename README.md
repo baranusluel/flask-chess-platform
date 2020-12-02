@@ -33,7 +33,7 @@ python3 -m pip install -r requirements.txt
 ```
 
 3. Install stockfish engine in your system.  
-        1. download engine from [stockfish Download](https://stockfishchess.org/download/). If running on Raspberry Pi, compile from source following instructions [here](http://talkchess.com/forum3/viewtopic.php?t=70280).
+        1. download engine from [stockfish Download](https://stockfishchess.org/download/). If running on Raspberry Pi, compile from source following instructions [here](http://talkchess.com/forum3/viewtopic.php?t=70280).  
         2. For linux users, extract and move engine binary to `/usr/bin`.  
         3. change the engine path in Player2 class  
               ```python
