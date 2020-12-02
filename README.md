@@ -1,3 +1,9 @@
+Forked from: [omega-coder/flask-chess-platform](https://github.com/omega-coder/flask-chess-platform)
+
+Used as a mobile chessboard with AI to interface with the [square-on](https://github.com/baranusluel/square-on)
+physical chess robot.
+
+
 # flask-chess-platform
 
 
