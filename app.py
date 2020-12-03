@@ -13,6 +13,8 @@ import json
 from gevent.pywsgi import WSGIServer
 
 import serial
+import signal
+import sys
 
 
 class Player(object):
@@ -175,6 +177,7 @@ def console_demo():
         print(board)
         print("-"*50)
 
+ser = serial.Serial("/dev/ttyACM0", 9600)
 
 def run_game():
     global board
@@ -185,9 +188,23 @@ def run_game():
     engine = Player2(board)
     engine.init_stockfish()
     
-    ser = serial.Serial("/dev/ttyACM0", 9600)
     ser.flushInput()
     ser.write(b'new\n');
+
+    def serial_send_board():
+        ser.write(b'board\n')
+        ser.write(str(board).encode('ascii'))
+        ser.write(b'\n')
+        ser.flush()
+        x = ser.readline().decode('ascii')
+        print(x)
+        while "done" not in x:
+            time.sleep(0.2)
+            x = ser.readline().decode('ascii')
+            print(x)
+            
+        #while not ser.in_waiting or ser.readline() != b'done\r\n':
+        #    time.sleep(0.1)
 
     app = Flask(__name__, static_url_path='')
     @app.route('/', methods=['GET'])
@@ -198,6 +215,9 @@ def run_game():
 
     @app.route('/move', methods=['GET'])
     def move():
+        while ser.in_waiting:
+            print(ser.readline())
+
         global board
         global undo_moves_stack
         if not board.is_game_over():
@@ -212,13 +232,11 @@ def run_game():
                         board = Human.make_move(str(move_san))
                         undo_moves_stack = [] #make undo moves stack empty if any move is done.
                         print(board)
-                        ser.write(b'board\n')
-                        ser.write(str(board).encode('ascii'))
+                        serial_send_board()
                         if engine.is_turn():
                             board = engine.engine_move()
                             print(board)
-                            ser.write(b'board\n')
-                            ser.write(str(board).encode('ascii'))
+                            serial_send_board()
                 except Exception:
                     traceback.print_exc()
                 game_moves_san = [move_uci.san() for move_uci in board_to_game(board).mainline()]
@@ -309,9 +327,13 @@ def run_game():
 
     #app.run(host='127.0.0.1', debug=True)
 
+def signal_handler(sig, frame):
+    print('Force quitting program, closing serial port')
+    ser.close()
+    sys.exit(0)
 
 if __name__ == "__main__":
     #console_demo()
+    signal.signal(signal.SIGINT, signal_handler)
     run_game()
-
 
