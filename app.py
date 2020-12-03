@@ -254,7 +254,7 @@ def run_game():
         Human.set_board(board)
         engine.set_board(board)
         
-        ser.write("new\n")
+        ser.write(b'new\n')
 
         resp = {"fen": board.board_fen(), 'pgn': str(board_to_game(board).mainline_moves())}
         response = app.response_class(
